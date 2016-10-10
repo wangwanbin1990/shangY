@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.gcmobile.func.account.mapper.AccountMapper">
+	
+	<!-- 返回的结果集 -->
+	<resultMap type="com.gcmobile.func.account.entity.AccountVo" id="accountMapperResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 					column="USER_ID" />
+		<result property="total" 					column="TOTAL" />
+		<result property="useMoney" 				column="USE_MONEY" />
+		<result property="noUseMoney" 				column="NO_USE_MONEY" />
+		<result property="drawMoney"				column="DRAW_MONEY"/>
+		<result property="noDrawMoney" 				column="NO_DRAW_MONEY"/>		
+		<result property="lastUpdateTime" 			column="LAST_UPDATE_TIME"/>		
+	</resultMap>
+	
+	<!-- 插入记录，返回主键 -->
+	<insert id="insertEntity" parameterType="com.gcmobile.func.account.entity.Account">
+		INSERT INTO t_account 
+		(USER_ID, TOTAL, USE_MONEY,	NO_USE_MONEY, DRAW_MONEY, NO_DRAW_MONEY, LAST_UPDATE_TIME)
+		VALUES
+		(#{userId}, #{total}, #{useMoney}, #{noUseMoney}, #{drawMoney}, #{noDrawMoney}, now())
+		
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	
+  	<!-- 更新-->
+    <update id="updateEntity" parameterType="com.gcmobile.func.account.entity.Account" >
+	    update t_account
+	    <set >
+	      <if test="total != null" >
+	        TOTAL = #{total},
+	      </if>
+	      <if test="useMoney != null" >
+	        USE_MONEY = #{useMoney},
+	      </if>
+	      <if test="noUseMoney != null" >
+	        NO_USE_MONEY = #{noUseMoney},
+	      </if>
+	      <if test="drawMoney != null" >
+	        DRAW_MONEY = #{drawMoney},
+	      </if>
+	       <if test="noDrawMoney != null" >
+	        NO_DRAW_MONEY = #{noDrawMoney},
+	      </if>
+	      <if test="lastUpdateTime != null" >
+	        LAST_UPDATE_TIME = now(),
+	      </if>           
+	    </set>
+	    where ID = #{id}
+  	</update>
+	
+	<!--基本列 -->
+	<sql id="accountBaseColumn">
+		a.ID, 
+		a.USER_ID, 
+		a.TOTAL, 
+		a.USE_MONEY, 
+		a.NO_USE_MONEY, 
+		a.DRAW_MONEY,
+		a.NO_DRAW_MONEY,
+		a.LAST_UPDATE_TIME	
+	</sql>
+	
+	<!-- 封装查询条件 -->
+	<sql id="account_Where_Clause">
+		<if test="id != null">
+			and a.id =#{id}
+		</if>
+		<if test="userId != null ">
+			and a.USER_ID = #{userId}
+		</if>
+	</sql>
+	
+  	<!-- 根据条件查询记录集合 -->
+	<select id="queryAccountList" parameterType="com.gcmobile.func.account.entity.AccountCnd" resultMap="accountMapperResultMap" >
+		select 	
+		   <include refid="accountBaseColumn"/>
+		from
+			t_account a
+		where 1=1
+		<include refid="account_Where_Clause"/>
+		<if test="lockedRecordYn != null and lockedRecordYn == 'yes'">
+			FOR UPDATE
+		</if>		
+  	</select>
+  	
+  	<!-- 根据条件查询记录数量-->
+	<select id="queryAccountCount" parameterType="com.gcmobile.func.account.entity.AccountCnd" resultType="java.lang.Integer" >
+		select count(a.id)
+		from
+			t_account a
+		where 1=1
+		<include refid="account_Where_Clause"/>
+  	</select>
+  	
+  	<!-- 根据UserId查询 -->
+	<select id="queryByUserId" parameterType="java.lang.Integer" resultMap="accountMapperResultMap" >
+		select <include refid="accountBaseColumn"/> from t_account a where a.user_id = #{userId}
+  	</select>
+  	
+  	<!-- 根据ID查询 -->
+	<select id="queryByUserIdForUpdate" parameterType="java.lang.Integer" resultMap="accountMapperResultMap" >
+		select 	<include refid="accountBaseColumn"/> from t_account a where a.user_id = #{userId} FOR UPDATE
+  	</select>
+</mapper>  

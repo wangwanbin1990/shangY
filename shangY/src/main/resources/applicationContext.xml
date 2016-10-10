@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.2.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+        http://www.springframework.org/schema/aop 
+  		http://www.springframework.org/schema/aop/spring-aop-3.2.xsd">
+	<description>Spring公共配置 </description>
+
+	<!-- 使用annotation 自动注册bean, 并保证@Required、@Autowired的属性被注入 -->
+	<context:component-scan base-package="com.gcmobile.**">
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Service" />
+	</context:component-scan>
+	
+	<!-- 加载properties文件 -->
+	<bean id="propertyPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath*:/jdbc.properties</value>
+				<value>classpath*:/system.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- 采用druid做为数据源 -->
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+		<!-- 基本属性 driver、url、user、password -->
+		<property name="driverClassName" value="${mysql.jdbc.driverClassName}" />
+		<property name="url" value="${mysql.jdbc.url}" />
+		<property name="username" value="${mysql.jdbc.username}" />
+		<property name="password" value="${mysql.jdbc.password}" />
+
+
+		<!-- 配置初始化大小、最小、最大 -->
+		<property name="initialSize" value="20" />
+		<property name="minIdle" value="5" />
+		<property name="maxActive" value="3000" />
+
+		<!-- 配置获取连接等待超时的时间 -->
+		<property name="maxWait" value="10000" />
+
+		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+		<property name="timeBetweenEvictionRunsMillis" value="60000" />
+
+		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name="minEvictableIdleTimeMillis" value="300000" />
+
+		<property name="validationQuery" value="SELECT 'x'" />
+		<property name="testWhileIdle" value="true" />
+		<property name="testOnBorrow" value="false" />
+		<property name="testOnReturn" value="false" />
+
+		<!-- 配置监控统计拦截的filters -->
+		<!-- <property name="filters" value="stat,log4j" /> -->
+		<property name="proxyFilters">
+			<list>
+				<ref bean="stat-filter" />
+				<ref bean="log-filter" />
+			</list>
+		</property>
+
+		<property name="removeAbandoned" value="true" /><!-- 打开removeAbandoned功能 -->
+		<property name="removeAbandonedTimeout" value="1800" /><!-- 1800秒，也就是30分钟 -->
+		<property name="logAbandoned" value="true" /><!-- 关闭abanded连接时输出错误日志 -->
+	</bean>
+
+	<bean id="stat-filter" class="com.alibaba.druid.filter.stat.StatFilter">
+		<property name="slowSqlMillis" value="1000" />
+		<property name="logSlowSql" value="true" />
+	</bean>
+	<bean id="log-filter" class="com.alibaba.druid.filter.logging.Log4jFilter">
+		<!-- <property name="statementExecutableSqlLogEnable" value="true" /> -->
+		<property name="statementCreateAfterLogEnabled" value="false" />
+		<property name="statementPrepareAfterLogEnabled" value="false" />
+		<property name="statementPrepareCallAfterLogEnabled" value="false" />
+		<property name="statementCloseAfterLogEnabled" value="false" />
+		<property name="statementParameterClearLogEnable" value="false" />
+	</bean>
+	
+		
+	<!-- 事务方法处理结束 -->
+	
+	<!-- MyBatis配置 -->
+	<!-- 配置mybatis的sqlSessionFactory ，这里的property为简写形式 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<!-- 自定义拦截器 -->
+		<property name="plugins">
+			<array>
+				<bean class="com.gcmobile.common.interceptor.PaginationInterceptor">
+					<property name="dialect" value="MySQL" />
+				</bean>
+			</array>
+		</property>
+		<property name="configLocation" value="classpath:mybatis-config.xml" />
+	</bean>
+	<!-- mybatis映射XML文件，注入所有的mapper接口 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.gcmobile.**.mapper" />
+	</bean>	
+	<!-- MyBatis配置  结束-->
+	
+	<!-- 事务管理 -->
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<tx:annotation-driven transaction-manager="txManager" />
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<tx:attributes>
+			<tx:method name="save*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="add*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="create*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="insert*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="update*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="reset*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="merge*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="del*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="remove*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="get*" read-only="true" />
+			<tx:method name="load*" read-only="true" />
+			<tx:method name="count*" read-only="true" />
+			<tx:method name="find*" read-only="true" />
+			<tx:method name="query*" read-only="true" />
+			<tx:method name="list*" read-only="true" />
+			<tx:method name="*" read-only="true" />
+		</tx:attributes>
+	</tx:advice>
+	<aop:config>
+		<aop:pointcut id="txPointcut" expression="execution(* com.gcmobile.func.*.service.*.*(..))" />
+		<aop:advisor pointcut-ref="txPointcut" advice-ref="txAdvice" />
+	</aop:config>
+	<bean id="dictionary" class="com.gcmobile.common.Dictionary" init-method="init" />
+	
+	<!-- 通过spring初始化的函数 获取系统配置文件内容 -->
+	<bean id="propertiesUtil" class="com.gcmobile.utils.PropertiesUtil" init-method="load">
+		<property name="fileNames">
+			<array>
+				<value>system.properties</value>
+			</array>
+		</property>
+	</bean>
+	
+	<!-- 配置发送邮件内容 -->
+	<bean id="javaMailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<!-- SMTP发送邮件的服务器的IP和端口 -->
+		<property name="host" value="${email_host}" />
+		<property name="port" value="${email_port}" />
+
+		<!-- 登陆SMTP邮件发送服务器的用户名和密码 -->
+		<property name="username" value="${email_username}" />
+		<property name="password" value="${email_pwd}" />
+
+		<!-- 获得邮件会话属性,验证登录邮件服务器是否成功 -->
+		<property name="javaMailProperties">
+			<props>
+				<prop key="mail.smtp.auth">${email_auth}</prop>
+				<prop key="mail.smtp.timeout">${email_timeout}</prop>
+			</props>
+		</property>
+	</bean>
+</beans>

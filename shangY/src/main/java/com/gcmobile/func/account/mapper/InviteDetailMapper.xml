@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.gcmobile.func.account.mapper.InviteDetailMapper">
+
+	<!-- 返回的结果集 -->
+	<resultMap type="com.gcmobile.func.account.entity.InviteDetailVo" id="inviteDetailVoesultMap">
+		<id property="id" column="id" />
+		<result property="userid" 					column="USERID" />
+		<result property="username" 				column="USERNAME" />
+		<result property="invitedUserid" 			column="INVITED_USERID" />
+		<result property="invitedUsername" 			column="INVITED_USERNAME" />
+		<result property="type" 					column="TYPE"/>
+		<result property="isInvest"	    			column="IS_INVEST" />
+		<result property="interest"  				column="INTEREST" />
+		<result property="registerTime"	 			column="REGISTER_TIME" />
+		<result property="realnameApprovedTime" 	column="REALNAME_APPROVED_TIME" /> 
+		<result property="inviteSuccessTime" 		column="INVITE_SUCCESS_TIME" />
+		<result property="bankinfoApproveTime" 		column="BANKINFO_APPROVED_TIME" /> 
+		<result property="addTime" 					column="ADD_TIME" /> 
+		<result property="updateTime" 				column="UPDATE_TIME" />
+	</resultMap>
+	
+	<!-- 根据userId查询推荐记录-->
+	<select id="queryInviteDetailListByUserId" parameterType="java.lang.Integer" resultMap="inviteDetailVoesultMap">
+		SELECT t.USERID, t.USERNAME, t.INVITED_USERID, t.INVITED_USERNAME, t.TYPE, CASE WHEN t1.total > 0 THEN 1 ELSE 0 END as IS_INVEST
+		,IFNULL(t2.BACK_MONEY,0) as INTEREST 
+		FROM (
+			-- A->B (直接推荐关系)
+			select m2.ID as USERID, m2.USERNAME as USERNAME, m1.ID as INVITED_USERID, m1.USERNAME as INVITED_USERNAME, 0 as TYPE
+			from t_member m1, t_member m2
+			where m1.INVITERID = m2.ID
+			union all
+			-- A->C (间接推荐关系)
+			select m3.ID as USERID, m3.USERNAME as USERNAME, m1.ID as INVITED_USERID, m1.USERNAME as INVITED_USERNAME, 1 as TYPE
+			from t_member m1, t_member m2, t_member m3
+			where m1.INVITERID = m2.ID
+			and m2.INVITERID = m3.ID
+		) t
+		LEFT JOIN (SELECT USER_ID,IFNULL(SUM(ACCOUNT), 0) as total FROM t_cur_in GROUP BY  USER_ID) t1 ON t.INVITED_USERID = t1.USER_ID
+		LEFT JOIN (SELECT INVITED_USERID, IFNULL(BACK_MONEY, 0) as BACK_MONEY FROM t_invite_detail WHERE AWARD_TYPE = 1 AND USERID = #{userId} AND UPDATE_TIME IS NOT NULL GROUP BY INVITED_USERID) t2 ON t.INVITED_USERID = t2.INVITED_USERID
+		WHERE t.USERID = #{userId}
+  	</select>  	
+  	
+	<!-- 根据userId查询推荐记录数量-->
+	<select id="queryInviteDetailCountByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer" >
+		SELECT count(*)
+		FROM (
+			-- A->B (直接推荐关系)
+			select m2.ID as USERID, m2.USERNAME as USERNAME, m1.ID as INVITED_USERID, m1.USERNAME as INVITED_USERNAME, 0 as TYPE
+			from t_member m1, t_member m2
+			where m1.INVITERID = m2.ID
+			union all
+			-- A->C (间接推荐关系)
+			select m3.ID as USERID, m3.USERNAME as USERNAME, m1.ID as INVITED_USERID, m1.USERNAME as INVITED_USERNAME, 1 as TYPE
+			from t_member m1, t_member m2, t_member m3
+			where m1.INVITERID = m2.ID
+			and m2.INVITERID = m3.ID
+		) t
+		WHERE t.USERID = #{userId}
+  	</select> 
+  	
+  	
+  	<!-- 根据userId查询推荐成功记录数量-->
+	<select id="queryInviteSuccessCountByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer" >
+		SELECT count(*)
+		FROM (
+			-- A->B (直接推荐关系)
+			select m2.ID as USERID, m2.USERNAME as USERNAME, m1.ID as INVITED_USERID, m1.USERNAME as INVITED_USERNAME, 0 as TYPE
+			from t_member m1, t_member m2
+			where m1.INVITERID = m2.ID
+			union all
+			-- A->C (间接推荐关系)
+			select m3.ID as USERID, m3.USERNAME as USERNAME, m1.ID as INVITED_USERID, m1.USERNAME as INVITED_USERNAME, 1 as TYPE
+			from t_member m1, t_member m2, t_member m3
+			where m1.INVITERID = m2.ID
+			and m2.INVITERID = m3.ID
+		) t
+		INNER JOIN (SELECT USER_ID,IFNULL(SUM(ACCOUNT), 0) as total FROM t_cur_in GROUP BY  USER_ID) t1 ON t.INVITED_USERID = t1.USER_ID
+		WHERE t.USERID = #{userId}
+  	</select> 
+</mapper>  

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
+	<description>Spring-Shiro</description>
+
+	<!-- Shiro Filter -->
+	<bean id="shiroSecurityFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<property name="securityManager" ref="securityManager" />
+		<property name="loginUrl" value="/login" />
+		<!-- <property name="successUrl" value="/index.html" /> -->
+		<property name="unauthorizedUrl" value="/error/403.html" />
+		<property name="filters">
+			<map>
+				<entry key="sso" value-ref="ssoFilter" />
+				<entry key="statelessAuthc" value-ref="statelessAuthcFilter" />
+			</map>
+		</property>
+		<property name="filterChainDefinitions">
+			<value>
+				/css/** = anon
+				/images/** = anon
+				/js/** = anon
+				/page/common/** = anon
+				/banner/** = anon
+				/image/** = anon
+				/attached/** = anon
+				/cms/** = anon
+				
+				<!-- SEO -->
+				/robots.txt = anon
+				/sitemap.xml = anon
+				
+				/login/** = anon
+				/logout = anon
+				/restapihide/** = statelessAuthc	
+				/** = sso
+			</value>
+		</property>
+	</bean>
+	
+	<bean id="ssoFilter" class="com.gcmobile.security.SsoFilter">
+		<property name="cookieRetrievingCookieGenerator" ref="cookieRetrievingCookieGenerator" />
+	</bean>
+	
+	<bean id="statelessAuthcFilter" class="com.gcmobile.sign.filter.StatelessAuthcFilter"/>
+	
+	<bean id="cookieRetrievingCookieGenerator" class="com.gcmobile.security.CookieRetrievingCookieGenerator">
+		<property name="cookieSecure" value="false" />
+		<property name="cookieMaxAge" value="-1" />
+		<property name="cookieName" value="CASTGC" />
+		<property name="cookiePath" value="/" />
+		 <property name="cookieDomain" value="${sso.cookieDomain}" /> 
+	</bean>
+	
+	<!-- 凭证匹配器 -->
+    <bean id="credentialsMatcher" class="com.gcmobile.security.credentials.RetryLimitHashedCredentialsMatcher">
+        <property name="hashAlgorithmName" value="md5"/>
+        <property name="hashIterations" value="2"/>
+        <property name="storedCredentialsHexEncoded" value="true"/>
+    </bean>
+
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<property name="realms">
+	  		<list>
+	  			<ref bean="shiroRealm" />
+	  			<!--<ref bean="ssoRealm" />-->
+	  		</list>
+	  	</property>
+		<property name="subjectFactory" ref="ssoSubjectFactory"/>
+	</bean>
+
+	<!--<bean id="ssoRealm" class="com.gcmobile.security.SsoRealm"/>-->
+	<bean id="shiroRealm" class="com.gcmobile.security.ShiroRealm"/>
+	
+	<bean id="ssoSubjectFactory" class="com.gcmobile.security.SsoSubjectFactory"/>
+
+	<!-- 用户授权信息Cache(EhCache) -->
+	<bean id="ehCacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+		<property name="cacheManagerConfigFile" value="classpath:ehcache-shiro.xml" />
+	</bean>
+
+	<!-- SecurityUtils.setSecurityManager(securityManager) -->
+	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="staticMethod" value="org.apache.shiro.SecurityUtils.setSecurityManager" />
+		<property name="arguments" ref="securityManager" />
+	</bean>
+
+	<!-- 保证实现了Shiro内部lifecycle函数的bean执行 -->
+	<bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor" />
+
+</beans>

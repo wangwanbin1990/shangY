@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.gcmobile.func.account.mapper.BaseCashRecordMapper">
+	
+	<!-- 结果集 -->
+	<resultMap type="com.gcmobile.func.account.entity.CashRecord" id="cashRecordResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 					column="USER_ID" />
+		<result property="status" 					column="STATUS" />
+		<result property="account" 					column="ACCOUNT" />
+		<result property="bank" 					column="BANK" />
+		<result property="branch" 					column="BRANCH"/>
+		<result property="cnapsCode"				column="CNAPS_CODE"/>
+		<result property="total"	    			column="TOTAL" />
+		<result property="capital"	    			column="CAPITAL" />
+		<result property="interest"	    			column="INTEREST" />
+		<result property="credited"  				column="CREDITED" />
+		<result property="fee"	 					column="FEE" />
+		<result property="verifyUserid" 			column="VERIFY_USERID" /> 
+		<result property="verifyTime" 				column="VERIFY_TIME" />
+		<result property="verifyRemark" 			column="VERIFY_REMARK" /> 
+		<result property="verifyUserid2" 			column="VERIFY_USERID2" /> 
+		<result property="verifyTime2" 				column="VERIFY_TIME2" />
+		<result property="verifyRemark2" 			column="VERIFY_REMARK2" />
+		<result property="addtime" 					column="ADDTIME" />
+		<result property="addip" 					column="ADDIP" /> 
+		<result property="version" 				 	column="VERSION" />
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="cashRecordBaseColumn">
+		c.ID, 
+		c.USER_ID, 
+		c.STATUS, 
+		c.ACCOUNT, 
+		c.BANK, 
+		c.BRANCH,
+		c.CNAPS_CODE,
+		c.TOTAL, 
+		c.CAPITAL,
+		C.INTEREST,
+		c.CREDITED, 
+		c.FEE, 
+		c.VERIFY_USERID, 
+		c.VERIFY_TIME, 
+		c.VERIFY_REMARK, 
+		c.VERIFY_USERID2, 
+		c.VERIFY_TIME2, 
+		c.VERIFY_REMARK2, 
+		c.ADDTIME, 
+		c.ADDIP,
+		c.VERSION
+	</sql>
+	
+	<!-- 插入记录，返回主键 -->
+	<insert id="insertEntity" parameterType="com.gcmobile.func.account.entity.CashRecord">
+		INSERT INTO t_cashrecord 
+		(USER_ID,CURLIL_OUT_ID,	STATUS,	ACCOUNT,	BANK,	BRANCH,CNAPS_CODE,TOTAL,CAPITAL,INTEREST,	CREDITED,	FEE,	VERIFY_USERID,VERIFY_TIME,
+		VERIFY_REMARK,	VERIFY_USERID2,	VERIFY_TIME2,	VERIFY_REMARK2,	ADDTIME,  ADDUSER,  ADDIP,	VERSION,PLATFORM,DEVICE_SN)
+		VALUES
+		(#{userId},#{curlilOutId},#{status},#{account},#{bank},#{branch},#{cnapsCode},#{total},#{capital},#{interest},#{credited},#{fee},#{verifyUserid},#{verifyTime},
+		#{verifyRemark}, #{verifyUserid2},#{verifyTime2},#{verifyRemark2},now(),#{adduser},#{addip},#{version},#{platform},#{deviceSn})
+		
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	
+  	<!-- 根据ID查询 -->
+	<select id="queryById" parameterType="java.lang.Integer" resultMap="cashRecordResultMap" >
+		select 	
+		   <include refid="cashRecordBaseColumn"/>
+		from
+			t_cashrecord c
+		where 1=1
+		and c.id=#{id}
+  	</select>
+	
+  <!-- 更新-->
+  <update id="updateEntity" parameterType="com.gcmobile.func.account.entity.CashRecord" >
+    update t_cashrecord
+    <set >
+      <if test="status != null" >
+        STATUS = #{status},
+      </if>
+      <if test="account != null" >
+        ACCOUNT = #{account},
+      </if>
+      <if test="bank != null" >
+        BANK = #{bank},
+      </if>
+      <if test="branch != null" >
+        BRANCH = #{branch},
+      </if>      
+      <if test="total != null" >
+        TOTAL = #{total},
+      </if>
+      <if test="capital != null" >
+        CAPITAL = #{capital},
+      </if>
+      <if test="interest != null" >
+        INTEREST = #{interest},
+      </if>
+      <if test="credited != null" >
+        CREDITED = #{credited},
+      </if>
+      <if test="fee != null" >
+        FEE = #{fee},
+      </if>
+      <if test="verifyUserid != null" >
+        VERIFY_USERID = #{verifyUserid},
+      </if>
+      <if test="verifyTime != null" >
+        VERIFY_TIME = #{verifyTime},
+      </if>
+      <if test="verifyRemark != null" >
+        VERIFY_REMARK = #{verifyRemark},
+      </if>
+      <if test="verifyUserid2 != null" >
+        VERIFY_USERID2 = #{verifyUserid2},
+      </if>
+      <if test="verifyTime2 != null" >
+        VERIFY_TIME2 = #{verifyTime2},
+      </if>                        
+      <if test="verifyRemark2 != null" >
+        VERIFY_REMARK2 = #{verifyRemark2},
+      </if>    
+       <if test="addtime != null" >
+        ADDTIME = #{addtime},
+      </if>
+      <if test="addip != null" >
+        ADDIP = #{addip},
+      </if> 
+      <if test="version != null" >
+        VERSION = #{version},
+      </if>                          
+    </set>
+    where ID = #{id}
+    <if test="selfVersion != null">
+       and VERSION = #{selfVersion}
+    </if>    
+  </update>
+  	
+</mapper>  

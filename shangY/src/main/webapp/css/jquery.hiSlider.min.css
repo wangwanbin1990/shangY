@@ -1,0 +1,78 @@
+.hiSlider{
+	overflow: hidden;
+	width: 100%;
+	background: #eee;
+}
+.hiSlider img{
+	width: 100%;
+	background: #eee;
+}
+.hiSlider-item{
+	float: left;
+}
+
+
+.hiSlider-pages,.hiSlider-title {
+	position: absolute;
+	z-index: 3
+}
+/*
+.hiSlider-btn-prev,.hiSlider-btn-next {
+	position: absolute;
+	z-index: 5;
+	top: 50%;
+	height: 30px;
+	width: 30px;
+	background: url() no-repeat; 
+	margin-top: -15px;
+	text-indent: -200px;
+	overflow: hidden;
+	opacity: .6;
+	filter: alpha(opacity:60)
+}
+
+.hiSlider-btn-prev {
+	left: 10px
+}
+
+.hiSlider-btn-next {
+	right: 10px;
+	background-position: -30px 0
+}
+
+.hiSlider-btn-prev:hover,.hiSlider-btn-next:hover {
+	opacity: 1;
+	filter: alpha(opacity:100)
+}
+*/
+.hiSlider-title {
+	bottom: 0;
+	width: 100%;
+	padding: 6px 0;
+	color: #fff;
+	text-indent: 10px;
+	z-index: 2;
+	font: 14px/2 "Microsoft YaHei",Arial,Tahoma
+}
+
+.hiSlider-pages {
+	bottom: 10px;
+	right: 10px;
+	text-align: right
+}
+
+.hiSlider-pages a {
+	height: 0.5rem;
+	width: 0.5rem;
+	margin: 0 0.2rem;
+	display: inline-block;
+	overflow: hidden;
+	text-indent: -100px;
+	font-size: 0;
+	border-radius: 50%;
+	background: #ddd
+}
+
+.hiSlider-pages a.active {
+	background: #5472BF
+}

@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.gcmobile.func.account.mapper.RechargeRecordMapper">
+	
+	<!-- 返回的结果集 -->
+	<resultMap type="com.gcmobile.func.account.entity.RechargeRecordVo" id="rechargeRecordResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 					column="USER_ID" />
+		<result property="type" 					column="TYPE" />
+		<result property="tradeNo" 					column="TRADE_NO" />
+		<result property="status" 					column="STATUS" />
+		<result property="money"	    			column="MONEY" />
+		<result property="payment"  				column="PAYMENT" />
+		<result property="remark" 					column="REMARK" />
+		<result property="fee" 						column="FEE" /> 
+		<result property="verifyUserid" 			column="VERIFY_USERID" /> 
+		<result property="verifyTime" 				column="VERIFY_TIME" />
+		<result property="verifyRemark" 			column="VERIFY_REMARK" /> 
+		<result property="addtime" 					column="ADDTIME" />
+		<result property="addip" 					column="ADDIP" /> 
+		<result property="onlinetype" 				column="onlinetype" /> 
+		<result property="verifyUserid2" 			column="VERIFY_USERID2" /> 
+		<result property="verifyTime2" 				column="VERIFY_TIME2" />
+		<result property="verifyRemark2" 			column="VERIFY_REMARK2" />
+		<result property="cardNum" 					column="CARDNUM" /> 
+		<result property="bankUsername" 			column="BANK_USERNAME" /> 
+		<result property="version" 				 	column="VERSION" />
+		<result property="username" 				column="username" />
+		<result property="platform" 				column="PLATFORM" />
+		<result property="deviceSn" 				column="DEVICE_SN" />
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="rechargeRecordBaseColumn">
+		r.ID, 
+		r.USER_ID, 
+		r.TYPE, 
+		r.TRADE_NO, 
+		r.STATUS, 
+		r.MONEY, 
+		r.PAYMENT, 
+		r.REMARK, 
+		r.FEE, 
+		r.VERIFY_USERID, 
+		r.VERIFY_TIME, 
+		r.VERIFY_REMARK, 
+		r.ADDTIME, 
+		r.ADDIP, 
+		r.onlinetype, 
+		r.VERIFY_USERID2, 
+		r.VERIFY_TIME2, 
+		r.VERIFY_REMARK2, 
+		r.CARDNUM, 
+		r.BANK_USERNAME, 
+		r.VERSION,
+		r.PLATFORM,
+		r.DEVICE_SN
+	</sql>
+	
+	<!-- 封装查询条件 -->
+	<sql id="rechargeRecord_Where_Clause">
+		<if test="id != null">
+			and r.id =#{id}
+		</if>
+		<if test="tradeNo != null ">
+			and r.TRADE_NO = #{tradeNo}
+		</if>
+		<if test="userId != null ">
+			and r.USER_ID = #{userId}
+		</if>
+		<if test="rechargeStatus != null">
+			and r.STATUS = #{rechargeStatus}
+		</if>		
+		<if test="beginTime != null">
+			and r.ADDTIME <![CDATA[>=]]> UNIX_TIMESTAMP(#{beginTime})
+		</if>
+		<if test="endTime != null">
+			and r.ADDTIME <![CDATA[<=]]> UNIX_TIMESTAMP(#{endTime})
+		</if>
+	</sql>
+	
+  	<!-- 根据条件查询记录集合 -->
+	<select id="queryRechargeRecordList" parameterType="com.gcmobile.func.account.entity.RechargeRecordCnd" resultMap="rechargeRecordResultMap" >
+		select 	
+			m.USERNAME			as username,
+		   <include refid="rechargeRecordBaseColumn"/>
+		from
+			t_rechargerecord r,t_member m
+		where 1=1
+		and r.USER_ID = m.id
+		<include refid="rechargeRecord_Where_Clause"/>
+		ORDER BY r.ADDTIME desc
+		<if test="lockedRecordYn != null and lockedRecordYn == 'yes'">
+			FOR UPDATE
+		</if>	
+  	</select>
+  	
+  	<!-- 根据查询条件统计充值总额 -->
+  	<select id="queryRechargeTotalByCnd" parameterType="com.gcmobile.func.account.entity.RechargeRecordCnd" resultType="java.math.BigDecimal" >
+		select 	
+			ifnull(sum(r.money), 0)
+		from
+			t_rechargerecord r,t_member m
+		where 1=1
+		and r.USER_ID = m.id
+		<include refid="rechargeRecord_Where_Clause"/>
+  	</select>
+  	
+  	<!-- 根据条件查询记录数量-->
+	<select id="queryRechargeRecordCount" parameterType="com.gcmobile.func.account.entity.RechargeRecordCnd" resultType="java.lang.Integer" >
+		select count(r.id)
+		from
+			t_rechargerecord r,t_member m
+		where 1=1
+		and r.USER_ID = m.id
+		<include refid="rechargeRecord_Where_Clause"/>
+  	</select>
+  	
+  		<!-- 查询某用户大于起始日期的线上充值总和-->
+	<select id="queryOnlineMoneyTotalByDatetime"  resultType="java.math.BigDecimal" >
+		SELECT SUM(R.MONEY) 
+		FROM t_rechargerecord R 
+		WHERE R.type = 1 
+		and R.STATUS = '1' 
+		AND R.USER_ID = #{memberId} 
+		and R.verify_time > #{datetime}
+  	</select>
+  	
+  		<!-- 查询某用户大于起始日期的线上充值总和-->
+	<select id="queryOfflineMoneyTotalByDatetime"  resultType="java.math.BigDecimal" >
+		SELECT SUM(R.MONEY) 
+		FROM t_rechargerecord R 
+		WHERE R.type = 2 
+		and R.STATUS = '1' 
+		AND R.USER_ID = #{memberId} 
+		and R.verify_time2 > #{datetime}
+  	</select>  	
+  	
+  	
+  	<!--  for base start -->
+  	
+ 	<!-- 插入记录，返回主键 -->
+	<insert id="insertEntity" parameterType="com.gcmobile.func.account.entity.RechargeRecord">
+		INSERT INTO t_rechargerecord 
+		(USER_ID,	TYPE,	TRADE_NO,	STATUS,	MONEY,	PAYMENT,	REMARK,	FEE,   VERIFY_USERID,	VERIFY_TIME,	
+		VERIFY_REMARK,	ADDTIME,	ADDIP,	onlinetype,	VERIFY_USERID2,	VERIFY_TIME2,	VERIFY_REMARK2,	CARDNUM, 
+		BANK_USERNAME,	VERSION,  PLATFORM,DEVICE_SN)
+		VALUES
+		(#{userId},#{type},#{tradeNo},#{status},#{money},#{payment},#{remark},#{fee},#{verifyUserid},#{verifyTime},
+		#{verifyRemark},now(),#{addip},#{onlinetype},#{verifyUserid2},#{verifyTime2},#{verifyRemark2},#{cardNum},
+		#{bankUsername},#{version},#{platform},#{deviceSn})
+		
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	
+  	<!-- 根据ID查询 -->
+	<select id="queryById" parameterType="java.lang.Integer" resultMap="rechargeRecordResultMap" >
+		select 	
+		   <include refid="rechargeRecordBaseColumn"/>
+		from
+			t_rechargerecord r
+		where 1=1
+		and r.id=#{id}
+  	</select>
+  	
+  	<select id="queryByIdForUpdate" parameterType="java.lang.Integer" resultMap="rechargeRecordResultMap" >
+		select 	
+		   <include refid="rechargeRecordBaseColumn"/>
+		from
+			t_rechargerecord r
+		where 1=1
+		and r.id=#{id} for update
+  	</select>
+	
+  <!-- 更新-->
+  <update id="updateEntity" parameterType="com.gcmobile.func.account.entity.RechargeRecord" >
+    update t_rechargerecord
+    <set >
+      <if test="type != null" >
+        TYPE = #{type},
+      </if>
+      <if test="tradeNo != null" >
+        TRADE_NO = #{tradeNo},
+      </if>
+      <if test="status != null" >
+        STATUS = #{status},
+      </if>
+      <if test="money != null" >
+        MONEY = #{money},
+      </if>
+      <if test="payment != null" >
+        PAYMENT = #{payment},
+      </if>
+      <if test="remark != null" >
+        REMARK = #{remark},
+      </if>
+      <if test="fee != null" >
+        FEE = #{fee},
+      </if>
+      <if test="verifyUserid != null" >
+        VERIFY_USERID = #{verifyUserid},
+      </if>
+      <if test="verifyTime != null" >
+        VERIFY_TIME = #{verifyTime},
+      </if>
+      <if test="verifyRemark != null" >
+        VERIFY_REMARK = #{verifyRemark},
+      </if>
+      <if test="addtime != null" >
+        ADDTIME = #{addtime},
+      </if>  
+      <if test="addip != null" >
+        ADDIP = #{addip},
+      </if>
+      <if test="onlinetype != null" >
+        onlinetype = #{onlinetype},
+      </if>
+      <if test="verifyUserid2 != null" >
+        VERIFY_USERID2 = #{verifyUserid2},
+      </if>
+      <if test="verifyTime2 != null" >
+        VERIFY_TIME2 = #{verifyTime2},
+      </if>
+      <if test="verifyRemark2 != null" >
+        VERIFY_REMARK2 = #{verifyRemark2},
+      </if>
+      <if test="cardNum != null" >
+        CARDNUM = #{cardNum},
+      </if> 
+      <if test="bankUsername != null" >
+        BANK_USERNAME = #{bankUsername},
+      </if> 
+      <if test="version != null" >
+        VERSION = #{version},
+      </if>                                               
+    </set>
+    where ID = #{id}
+    <if test="selfVersion != null">
+       and VERSION = #{selfVersion}
+    </if>
+  </update>
+  	<!--  for base end -->
+  	
+  	<!-- 查询用户充值总额 -->
+	<select id="getRechargeTotal" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT IFNULL(SUM(r.MONEY), 0) FROM t_rechargerecord r
+			WHERE r.STATUS = 1 												
+				AND r.USER_ID = #{userId};
+  	</select>
+  	<select id="queryRechargeRecordLatest20" resultMap="rechargeRecordResultMap">
+		SELECT <include refid="rechargeRecordBaseColumn"/>
+		FROM t_rechargerecord r
+		WHERE r.STATUS=1
+		AND r.TYPE=1
+		AND r.MONEY &gt;=100
+		ORDER BY VERIFY_TIME DESC
+		LIMIT 0,20
+	</select>
+
+	<select id="queryRechargeRecordByOrderNo"  resultMap="rechargeRecordResultMap" parameterType="java.lang.String">
+		SELECT <include refid="rechargeRecordBaseColumn"/>
+		FROM t_rechargerecord r
+		WHERE r.TRADE_NO=#{orderNo}
+		limit 0,1
+	</select>
+	<select id="queryRechargeRecordByIdForUpdate"  resultMap="rechargeRecordResultMap" parameterType="java.lang.Integer">
+		SELECT <include refid="rechargeRecordBaseColumn"/>
+		FROM t_rechargerecord r
+		WHERE r.ID=#{id}
+		FOR UPDATE
+	</select>
+
+</mapper>  
