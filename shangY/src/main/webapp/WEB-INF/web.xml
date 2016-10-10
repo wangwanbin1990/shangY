@@ -52,7 +52,7 @@
 	
 	<filter>
 		<filter-name>xssFilter</filter-name>
-		<filter-class>com.gcmobile.common.filter.XssFilter</filter-class>
+		<filter-class>com.sy.common.filter.XssFilter</filter-class>
 		<init-param>
 			<param-name>exclusions</param-name>
 			<param-value>/css/*,/images/*,/js/*,/page/common/*,/banner/*,/image/*,/attached/*,/cms/*,/salariatBorrow/*,/commerceBorrow/*,/druid/*</param-value>
@@ -93,7 +93,7 @@
 	<!--App没有用到-->
 <!--	<filter>
     	<filter-name>UrlInterceptFilter</filter-name>
-    	<filter-class>com.gcmobile.common.filter.UrlInterceptFilter</filter-class>
+    	<filter-class>com.syn.filter.UrlInterceptFilter</filter-class>
     </filter>
   	<filter-mapping>
    		<filter-name>UrlInterceptFilter</filter-name>

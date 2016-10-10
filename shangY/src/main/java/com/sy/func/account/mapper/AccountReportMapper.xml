@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.sy.func.account.mapper.AccountReportMapper">
+	
+  	 <!--查询某个用户所有的提现冻结--> 
+	<select id="queryLockCashTotalByMemberId" parameterType="java.lang.Integer" resultType="java.math.BigDecimal" >
+		SELECT SUM(C.TOTAL)
+		FROM t_cashrecord C 
+		WHERE 1=1
+		and (C.STATUS = 0 OR C.STATUS = 1) 
+		AND C.USER_ID = #{memberId} 
+  	</select>
+  	
+  	 <!--根据用户Id和类型集合获取金额.-->
+	<select id="queryMoneyByType" resultType="java.math.BigDecimal" >
+		select sum(MONEY) 
+		FROM t_ACCOUNTLOG 
+		where USER_ID = #{memberId} 
+		<foreach collection="types" item="type" separator="or" open="and (" close=")">
+			<if test="type == 'vip_cost'" >
+				(type = #{type} and remark='vip认证通过')
+		    </if>
+			<if test="type != 'vip_cost'" >
+				type = #{type} 
+			</if>			
+		</foreach>
+  	</select>   
+  	
+</mapper>  

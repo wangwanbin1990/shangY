@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.sy.func.account.mapper.CashRecordlogMapper">
+	
+	<resultMap id="BaseResultMap" type="com.sy.func.account.entity.CashRecordlog" >
+    <id column="ID" property="id" jdbcType="INTEGER" />
+    <result column="CASHRECORD_ID" property="cashrecordId" jdbcType="INTEGER" />
+    <result column="TYPE" property="type" jdbcType="INTEGER" />
+    <result column="ADDTIME" property="addtime" jdbcType="TIMESTAMP" />
+    <result column="ADDIP" property="addip" jdbcType="VARCHAR" />
+    <result column="ADDUSER" property="adduser" jdbcType="INTEGER" />
+    <result column="DEVICE_SN" property="deviceSn" jdbcType="VARCHAR" />
+    <result column="PLATFORM" property="platform" jdbcType="INTEGER" />
+    <result column="REMARK" property="remark" jdbcType="VARCHAR" />
+    </resultMap>
+	
+	<!-- 插入记录，返回主键 -->
+	<insert id="insertCashRecordlog" parameterType="com.sy.func.account.entity.CashRecordlog">
+		INSERT INTO t_cashrecord_log 
+		(CASHRECORD_ID, 	TYPE,	ADDTIME,	ADDIP,	ADDUSER,	    PLATFORM, DEVICE_SN , REMARK)
+		VALUES
+		(#{cashrecordId},#{type},now(),#{addip},#{addUserId},#{platform},#{deviceSn},#{remark})
+		
+ 		 <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		 </selectKey>
+	</insert>
+	
+	<select id="findCashRecordDetail" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+		SELECT ID,CASHRECORD_ID,TYPE,ADDTIME FROM t_cashrecord_log 
+		WHERE CASHRECORD_ID=#{cashrecordId}
+		ORDER BY ID DESC
+	</select>
+	
+</mapper>  

@@ -17,7 +17,7 @@
 	<description>Spring公共配置 </description>
 
 	<!-- 使用annotation 自动注册bean, 并保证@Required、@Autowired的属性被注入 -->
-	<context:component-scan base-package="com.gcmobile.**">
+	<context:component-scan base-package="com.sy.**">
 		<context:include-filter type="annotation" expression="org.springframework.stereotype.Service" />
 	</context:component-scan>
 	
@@ -96,7 +96,7 @@
 		<!-- 自定义拦截器 -->
 		<property name="plugins">
 			<array>
-				<bean class="com.gcmobile.common.interceptor.PaginationInterceptor">
+				<bean class="com.sy.common.interceptor.PaginationInterceptor">
 					<property name="dialect" value="MySQL" />
 				</bean>
 			</array>
@@ -105,7 +105,7 @@
 	</bean>
 	<!-- mybatis映射XML文件，注入所有的mapper接口 -->
 	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-		<property name="basePackage" value="com.gcmobile.**.mapper" />
+		<property name="basePackage" value="com.sy.**.mapper" />
 	</bean>	
 	<!-- MyBatis配置  结束-->
 	
@@ -135,13 +135,13 @@
 		</tx:attributes>
 	</tx:advice>
 	<aop:config>
-		<aop:pointcut id="txPointcut" expression="execution(* com.gcmobile.func.*.service.*.*(..))" />
+		<aop:pointcut id="txPointcut" expression="execution(* com.sy.func.*.service.*.*(..))" />
 		<aop:advisor pointcut-ref="txPointcut" advice-ref="txAdvice" />
 	</aop:config>
-	<bean id="dictionary" class="com.gcmobile.common.Dictionary" init-method="init" />
+	<bean id="dictionary" class="com.sy.common.Dictionary" init-method="init" />
 	
 	<!-- 通过spring初始化的函数 获取系统配置文件内容 -->
-	<bean id="propertiesUtil" class="com.gcmobile.utils.PropertiesUtil" init-method="load">
+	<bean id="propertiesUtil" class="com.sy.utils.PropertiesUtil" init-method="load">
 		<property name="fileNames">
 			<array>
 				<value>system.properties</value>

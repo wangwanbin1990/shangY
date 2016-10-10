@@ -41,13 +41,13 @@
 		</property>
 	</bean>
 	
-	<bean id="ssoFilter" class="com.gcmobile.security.SsoFilter">
+	<bean id="ssoFilter" class="com.sy.security.SsoFilter">
 		<property name="cookieRetrievingCookieGenerator" ref="cookieRetrievingCookieGenerator" />
 	</bean>
 	
-	<bean id="statelessAuthcFilter" class="com.gcmobile.sign.filter.StatelessAuthcFilter"/>
+	<bean id="statelessAuthcFilter" class="com.sy.sign.filter.StatelessAuthcFilter"/>
 	
-	<bean id="cookieRetrievingCookieGenerator" class="com.gcmobile.security.CookieRetrievingCookieGenerator">
+	<bean id="cookieRetrievingCookieGenerator" class="com.sy.security.CookieRetrievingCookieGenerator">
 		<property name="cookieSecure" value="false" />
 		<property name="cookieMaxAge" value="-1" />
 		<property name="cookieName" value="CASTGC" />
@@ -56,7 +56,7 @@
 	</bean>
 	
 	<!-- 凭证匹配器 -->
-    <bean id="credentialsMatcher" class="com.gcmobile.security.credentials.RetryLimitHashedCredentialsMatcher">
+    <bean id="credentialsMatcher" class="com.sy.security.credentials.RetryLimitHashedCredentialsMatcher">
         <property name="hashAlgorithmName" value="md5"/>
         <property name="hashIterations" value="2"/>
         <property name="storedCredentialsHexEncoded" value="true"/>
@@ -72,10 +72,10 @@
 		<property name="subjectFactory" ref="ssoSubjectFactory"/>
 	</bean>
 
-	<!--<bean id="ssoRealm" class="com.gcmobile.security.SsoRealm"/>-->
-	<bean id="shiroRealm" class="com.gcmobile.security.ShiroRealm"/>
+	<!--<bean id="ssoRealm" class="com.syity.SsoRealm"/>-->
+	<bean id="shiroRealm" class="com.sy.security.ShiroRealm"/>
 	
-	<bean id="ssoSubjectFactory" class="com.gcmobile.security.SsoSubjectFactory"/>
+	<bean id="ssoSubjectFactory" class="com.sy.security.SsoSubjectFactory"/>
 
 	<!-- 用户授权信息Cache(EhCache) -->
 	<bean id="ehCacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">

@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.sy.func.account.mapper.AccountLogMapper">
+
+	<!-- 结果集 -->
+	<resultMap type="com.sy.func.account.entity.AccountLog" id="accountLogResultMap">
+		<id property="id" column="id" />
+		<result property="userId" 					column="USER_ID" />
+		<result property="type" 					column="TYPE" />
+		<result property="total" 					column="TOTAL" />
+		<result property="money" 					column="MONEY" />
+		<result property="useMoney"	    			column="USE_MONEY" />
+		<result property="noUseMoney"  				column="NO_USE_MONEY" />
+		<result property="toUser" 					column="TO_USER" />
+		<result property="targetId" 				column="TARGET_ID" />
+		<result property="targetName" 				column="TARGET_NAME" />
+		<result property="targetType"				column="TARGET_TYPE"/>
+		<result property="remark" 					column="REMARK" />
+		<result property="addtime" 					column="ADDTIME" />
+		<result property="addip" 					column="ADDIP" />
+		<result property="drawMoney"				column="DRAW_MONEY"/>
+		<result property="noDrawMoney" 				column="NO_DRAW_MONEY"/>		
+	</resultMap>
+	
+	<!--基本列 -->
+	<sql id="accountlogBaseColumn">
+		a.ID, 
+		a.USER_ID,
+		a.TYPE, 
+		a.TOTAL,
+		a.MONEY,
+		a.USE_MONEY, 
+		a.NO_USE_MONEY, 
+		a.TO_USER,
+		a.TARGET_ID,
+		a.TARGET_NAME,
+		a.TARGET_TYPE,
+		a.REMARK,
+		a.ADDTIME,
+		a.ADDIP,
+		a.DRAW_MONEY,
+		a.NO_DRAW_MONEY
+	</sql>
+	
+	<!-- 封装查询条件 -->
+	<sql id="accountLog_Where_Clause">
+		<if test="id != null">
+			and a.id =#{id}
+		</if>
+		<if test="userId != null ">
+			and a.USER_ID = #{userId}
+		</if>
+		<if test="type != null ">
+			and a.TYPE = #{type}
+		</if>
+		<if test="remark != null ">
+			and a.REMARK = #{remark}
+		</if>				
+	</sql>
+	
+	<!-- 插入记录，返回主键 -->
+	<insert id="insertEntity" parameterType="com.sy.func.account.entity.AccountLog">
+		INSERT INTO t_accountlog 
+		(USER_ID, TYPE,	TOTAL, MONEY, USE_MONEY, NO_USE_MONEY, TO_USER, TARGET_ID, TARGET_NAME, TARGET_TYPE, REMARK,
+		ADDTIME, ADDIP, DRAW_MONEY, NO_DRAW_MONEY)
+		VALUES
+		(#{userId}, #{type}, #{total}, #{money}, #{useMoney}, #{noUseMoney}, #{toUser}, #{targetId}, #{targetName}, #{targetType}, #{remark},
+		now(), #{addip}, #{drawMoney}, #{noDrawMoney})
+ 		<selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">  
+      	    SELECT LAST_INSERT_ID() AS ID    
+   		</selectKey>
+	</insert>
+	
+	<!-- 更新-->
+  	<update id="updateEntity" parameterType="com.sy.func.account.entity.AccountLog" >
+	    update t_accountlog
+	    <set >
+	      <if test="type != null" >
+	        TYPE = #{type},
+	      </if>
+	      <if test="total != null" >
+	        TOTAL = #{total},
+	      </if>
+	      <if test="money != null" >
+	        MONEY = #{money},
+	      </if>
+	      <if test="useMoney != null" >
+	        USE_MONEY = #{useMoney},
+	      </if>
+	      <if test="noUseMoney != null" >
+	        NO_USE_MONEY = #{noUseMoney},
+	      </if>
+	      <if test="toUser != null" >
+	        TO_USER = #{toUser},
+	      </if>
+	      <if test="targetId != null" >
+	        TARGET_ID = #{targetId},
+	      </if>
+	      <if test="targetName != null" >
+	        TARGET_NAME = #{targetName},
+	      </if>
+	      <if test="targetType != null" >
+	        TARGET_TYPE = #{targetType},
+	      </if>
+	      <if test="remark != null" >
+	        REMARK = #{remark},
+	      </if>
+	      <if test="addtime != null" >
+	        ADDTIME = #{addtime},
+	      </if>
+	      <if test="addip != null" >
+	        ADDIP = #{addip},
+	      </if>
+	      <if test="drawMoney != null" >
+	        DRAW_MONEY = #{drawMoney},
+	      </if>
+	       <if test="noDrawMoney != null" >
+	        NO_DRAW_MONEY = #{noDrawMoney},
+	      </if>      
+	    </set>
+	    where ID = #{id}
+  	</update>
+	
+  	<!-- 根据条件查询记录数量-->
+	<select id="queryAccountLogCount" parameterType="com.sy.func.account.entity.AccountLogCnd" resultType="java.lang.Integer" >
+		select count(a.id)
+		from
+			t_accountlog a
+		where 1=1
+		<include refid="accountLog_Where_Clause"/>
+  	</select>
+  	
+  	<!-- 根据ID查询 -->
+	<select id="queryById" parameterType="java.lang.Integer" resultMap="accountLogResultMap" >
+		select 	
+		   <include refid="accountlogBaseColumn"/>
+		from
+			t_accountlog a
+		where 1=1
+		and a.id=#{id}
+  	</select>
+  	
+  	<!-- 查询充值记录是否入账 -->
+  	<select id="queryRecharge" parameterType="Integer" resultType="Integer">
+  		select count(1) from rocky_accountlog where borrow_id=#{borrowId} and type='online_recharge'
+  	</select>
+</mapper>  

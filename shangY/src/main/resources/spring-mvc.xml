@@ -15,7 +15,7 @@
 		http://www.springframework.org/schema/aop/spring-aop-3.2.xsd">
 	
 	<!-- 自动扫描且只扫描@Controller -->
-	<context:component-scan base-package="com.gcmobile.**" use-default-filters="false">
+	<context:component-scan base-package="com.sy.**" use-default-filters="false">
 		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
 	</context:component-scan>
 	
@@ -77,7 +77,7 @@
 	<mvc:resources mapping="/**" location="/" cache-period="31556926" />
 	
 	<!-- 自定义全局异常处理 -->
-	<bean id="myExceptionHandlerExceptionResolver" class="com.gcmobile.base.MyExceptionHandlerExceptionResolver" /> 
+	<bean id="myExceptionHandlerExceptionResolver" class="com.sy.base.MyExceptionHandlerExceptionResolver" />
 
 	<!-- 定义JSP文件的位置 -->
 	<bean
@@ -100,5 +100,5 @@
 	</bean>
 
 	<!--Date类型转换器-->
-	<bean id="nullDataConverter" class="com.gcmobile.common.converter.NullDataConverter"></bean>
+	<bean id="nullDataConverter" class="com.sy.common.converter.NullDataConverter"></bean>
 </beans>
